@@ -1,0 +1,36 @@
+kind: Workflow
+metadata:
+  generateName: equity-downloader-
+  namespace: argo
+spec:
+  archiveLogs: true
+  entrypoint: marketdata
+  arguments:
+    parameters:
+      - name: ticker
+        value: MSFT
+      - name: start_date
+        value: 2015-01-01
+      - name: end_date
+        value: 2016-01-01
+  templates:
+    - name: marketdata
+      outputs:
+        artifacts:
+          - name: data
+            path: "/tmp/marketdata_{{inputs.parameters.ticker}}_{{inputs.parameters.start_date}}_{{inputs.parameters.end_date}}.csv"
+            archive:
+              none: { }
+      inputs:
+        parameters:
+          - name: ticker
+          - name: start_date
+          - name: end_date
+      container:
+        name: download_market_data
+        image: ericgoebelbecker/download_market_data:latest
+        command: ["python3", "/app/download_market_data.py" ]
+        args:
+          - "{{inputs.parameters.ticker}}"
+          - "{{inputs.parameters.start_date}}"
+          - "{{inputs.parameters.end_date}}"
